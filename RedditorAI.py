@@ -43,12 +43,19 @@ loader = RedditReader()
 documents = loader.load_data(subreddits=subreddits, search_keys=search_keys, post_limit=post_limit)
 index = VectorStoreIndex.from_documents(documents)
 
+# chat engine instead of a single query 
+chat_engine = index.as_chat_engine()
+
 # initializing query engine, and user question
-query_engine = index.as_query_engine()
+#query_engine = index.as_query_engine()
 
 print("Please enter your question: ")
 userQuestion = input()
 
-#response = query_engine.query("What are some good laptops for engineering?")
-response  = query_engine.query(userQuestion)
+# using query engine
+#response  = query_engine.query(userQuestion)
+
+# using chat engine
+response = chat_engine.chat(userQuestion)
+
 print(response)
