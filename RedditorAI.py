@@ -24,14 +24,31 @@ reddit_password = os.environ.get("REDDIT_PASSWORD")
 # loading reddit reader from LlamaHub
 RedditReader = download_loader('RedditReader')
 
-subreddits = ['uAlberta']
-search_keys = ['engineering', 'laptop']
-post_limit = 20
+# allow user to specify what subreddits they want
+subredditChoice = input("Please enter the name of the SubReddit you'd like to query: ")
+subreddits = [subredditChoice]
 
+searchkeyChoice1 = input("Please enter a keyword to narrow down the search: ")
+searchkeyChoice2 = input("Please enter another keyword to narrow down the search: ")
+search_keys = [searchkeyChoice1, searchkeyChoice2]
+
+print("Thank you, please wait as we process your request!")
+
+# will need to change accordingly; the higher this number the more accurate the answer will be
+# however, the higher the number = more data to embed, which will cost me more via openAI API
+post_limit = 15
+
+# loading appropriate subreddit data, and storing it as indexes
 loader = RedditReader()
 documents = loader.load_data(subreddits=subreddits, search_keys=search_keys, post_limit=post_limit)
 index = VectorStoreIndex.from_documents(documents)
 
+# initializing query engine, and user question
 query_engine = index.as_query_engine()
-response = query_engine.query("What are some good laptops for engineering?")
+
+print("Please enter your question: ")
+userQuestion = input()
+
+#response = query_engine.query("What are some good laptops for engineering?")
+response  = query_engine.query(userQuestion)
 print(response)
