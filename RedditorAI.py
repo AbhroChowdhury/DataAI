@@ -2,6 +2,18 @@ from llama_index import GPTVectorStoreIndex, download_loader
 from langchain.agents import initialize_agent, Tool
 from langchain.llms import OpenAI
 from langchain.chains.conversation.memory import ConversationBufferMemory
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
+
+reddit_client_id = os.environ.get("REDDIT_CLIENT_ID")
+reddit_client_secret = os.environ.get("REDDIT_CLIENT_SECRET")
+reddit_user_agent = os.environ.get("REDDIT_USER_AGENT")
+reddit_username = os.environ.get("REDDIT_USERNAME")
+reddit_password = os.environ.get("REDDIT_PASSWORD")
+
 
 RedditReader = download_loader('RedditReader')
 
@@ -13,18 +25,4 @@ loader = RedditReader()
 documents = loader.load_data(subreddits=subreddits, search_keys=search_keys, post_limit=post_limit)
 index = GPTVectorStoreIndex.from_documents(documents)
 
-tools = [
-    Tool(
-        name="Reddit Index",
-        func=lambda q: index.query(q),
-        description=f"Useful when you want to read relevant posts and top-level comments in subreddits.",
-    ),
-]
-llm = OpenAI(temperature=0)
-memory = ConversationBufferMemory(memory_key="chat_history")
-agent_chain = initialize_agent(
-    tools, llm, agent="zero-shot-react-description", memory=memory
-)
-
-output = agent_chain.run(input="What are the pain points of PyTorch users?")
-print(output)
+index.query("What are the pain points of PyTorch users?")
