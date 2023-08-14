@@ -21,7 +21,7 @@ reddit_user_agent = os.environ.get("REDDIT_USER_AGENT")
 reddit_username = os.environ.get("REDDIT_USERNAME")
 reddit_password = os.environ.get("REDDIT_PASSWORD")
 
-
+# loading reddit reader from LlamaHub
 RedditReader = download_loader('RedditReader')
 
 subreddits = ['uAlberta']
