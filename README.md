@@ -1,3 +1,3 @@
-# FileMentor.AI
+# Redditor.AI
 
-FileMentor.AI allows you to use AI to quickly find insights within your data
+Redditor.AI let's you leverage both AI and reddit to learn things quicker!
