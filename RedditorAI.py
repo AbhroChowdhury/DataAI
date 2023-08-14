@@ -1,4 +1,4 @@
-from llama_index import GPTVectorStoreIndex, download_loader
+from llama_index import VectorStoreIndex, download_loader
 from langchain.agents import initialize_agent, Tool
 from langchain.llms import OpenAI
 from langchain.chains.conversation.memory import ConversationBufferMemory
@@ -7,18 +7,14 @@ import os
 import json
 import openai
 
-def load_api_key(secrets_file="secrets.json"):
-    with open(secrets_file) as f:
-        secrets = json.load(f)
-    return secrets["OPENAI_API_KEY"]
-
-
-api_key = load_api_key()
-openai.api_key = api_key
-
-
+# load environment variables from .env file
+from dotenv import load_dotenv
 load_dotenv()
 
+# read the API key from the environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# reddit credentials
 reddit_client_id = os.environ.get("REDDIT_CLIENT_ID")
 reddit_client_secret = os.environ.get("REDDIT_CLIENT_SECRET")
 reddit_user_agent = os.environ.get("REDDIT_USER_AGENT")
@@ -28,26 +24,14 @@ reddit_password = os.environ.get("REDDIT_PASSWORD")
 
 RedditReader = download_loader('RedditReader')
 
-subreddits = ['MachineLearning']
-search_keys = ['PyTorch', 'deploy']
-post_limit = 10
+subreddits = ['uAlberta']
+search_keys = ['engineering', 'laptop']
+post_limit = 20
 
 loader = RedditReader()
 documents = loader.load_data(subreddits=subreddits, search_keys=search_keys, post_limit=post_limit)
-index = GPTVectorStoreIndex.from_documents(documents)
+index = VectorStoreIndex.from_documents(documents)
 
-tools = [
-    Tool(
-        name="Reddit Index",
-        func=lambda q: index.query(q),
-        description=f"Useful when you want to read relevant posts and top-level comments in subreddits.",
-    ),
-]
-llm = OpenAI(temperature=0)
-memory = ConversationBufferMemory(memory_key="chat_history")
-agent_chain = initialize_agent(
-    tools, llm, agent="zero-shot-react-description", memory=memory
-)
-
-output = agent_chain.run(input="What are the pain points of PyTorch users?")
-print(output)
+query_engine = index.as_query_engine()
+response = query_engine.query("What are some good laptops for engineering?")
+print(response)
