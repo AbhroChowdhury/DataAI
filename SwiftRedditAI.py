@@ -43,19 +43,21 @@ loader = RedditReader()
 documents = loader.load_data(subreddits=subreddits, search_keys=search_keys, post_limit=post_limit)
 index = VectorStoreIndex.from_documents(documents)
 
-# chat engine instead of a single query 
-chat_engine = index.as_chat_engine()
+tools = [
+    Tool(
+        name="Reddit Index",
+        func=lambda q: index.query(q),  
+        description=f"Useful when you want to read relevant posts and top-level comments in subreddits.",
+    ),
+]
 
-# initializing query engine, and user question
-#query_engine = index.as_query_engine()
+llm = OpenAI(temperature=0)
+memory = ConversationBufferMemory(memory_key="chat_history")
+agent_chain = initialize_agent(
+    tools, llm, agent="zero-shot-react-description", memory=memory
+)
 
-print("Please enter your question: ")
-userQuestion = input()
-
-# using query engine
-#response  = query_engine.query(userQuestion)
-
-# using chat engine
-response = chat_engine.chat(userQuestion)
-
-print(response)
+print("Ask your question!")
+userInput = input()
+output = agent_chain.run(input=userInput)
+print(output)
