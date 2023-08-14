@@ -1,2 +1,3 @@
-# DataAI
-Application that enables you to talk to your data
+# FileMentor.AI
+
+FileMentor.AI allows you to use AI to quickly find insights within your data
