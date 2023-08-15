@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 import json
 import openai
+from llama_index.memory import ChatMemoryBuffer
 
 # load environment variables from .env file
 from dotenv import load_dotenv
@@ -36,28 +37,21 @@ print("Thank you, please wait as we process your request!")
 
 # will need to change accordingly; the higher this number the more accurate the answer will be
 # however, the higher the number = more data to embed, which will cost me more via openAI API
-post_limit = 15
+post_limit = 17
 
 # loading appropriate subreddit data, and storing it as indexes
 loader = RedditReader()
 documents = loader.load_data(subreddits=subreddits, search_keys=search_keys, post_limit=post_limit)
 index = VectorStoreIndex.from_documents(documents)
 
-tools = [
-    Tool(
-        name="Reddit Index",
-        func=lambda q: index.query(q),  
-        description=f"Useful when you want to read relevant posts and top-level comments in subreddits.",
-    ),
-]
+memory = ChatMemoryBuffer.from_defaults(token_limit=50)
 
-llm = OpenAI(temperature=0)
-memory = ConversationBufferMemory(memory_key="chat_history")
-agent_chain = initialize_agent(
-    tools, llm, agent="zero-shot-react-description", memory=memory
-)
+chat_engine = index.as_chat_engine(chat_mode='context', memory=memory, system_prompt="You are a chat bot, able to have normal interactions. You have access to a few reddit posts based on what the user filtered. You will answer any query the user has in relation to these reddit posts. The user will ask a question in which you can usually find/derive an answer from the reddit posts.")
 
-print("Ask your question!")
-userInput = input()
-output = agent_chain.run(input=userInput)
-print(output)
+print("Please enter a question (type exit to leave):")
+userInput = ''
+
+while userInput != 'exit':
+    userInput = input()
+    response = chat_engine.chat(userInput)
+    print(f"GPTReddit: {response}")
